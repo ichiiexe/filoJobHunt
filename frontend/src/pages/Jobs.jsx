@@ -1,40 +1,22 @@
 import SearchBar from "../components/SearchBar";
 import JobFilters from "../components/Filters";
-import JobCard from "../components/JobCard";
-import { useEffect, useState } from "react";
-import { getJobs } from "../api/jobsApi";
+import JobList from "../components/JobList";
+import { useState } from "react";
 
 const Jobs = () => {
-  const [jobList, setJobList] = useState([]);
-
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const res = await getJobs();
-        setJobList(res);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchJobs();
-  }, []);
+  const [filters, setFilters] = useState({});
 
   return (
-    <main className="flex flex-col items-center p-4 gap-8">
-      <section>
-        <h1>Find Jobs</h1>
-        <SearchBar />
+    <main className="flex flex-col items-center p-4 gap-8 bg-gray-900 min-h-screen">
+      <section className="w-full flex flex-col items-center">
+        <h1 className="text-4xl font-bold text-gray-100 mb-6">Find Jobs</h1>
+        <SearchBar onSearch={setFilters} />
       </section>
-      <section className="flex gap-8 w-full">
-        <JobFilters />
+      <section className="flex gap-8 w-full max-w-7xl">
+        <JobFilters filters={filters} setFilters={setFilters} />
         <div className="w-full">
-          <h1 className="text-2xl mb-6">6 Jobs found</h1>
-          <div className="w-full grid grid-cols-2 gap-4">
-            {jobList.map((job) => (
-              <JobCard key={job._id} job={job} />
-            ))}
-          </div>
+          <h1 className="text-2xl font-bold mb-6 text-gray-100">Jobs found</h1>
+          <JobList filters={filters} />
         </div>
       </section>
     </main>

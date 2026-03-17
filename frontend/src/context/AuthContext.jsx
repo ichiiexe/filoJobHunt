@@ -1,3 +1,4 @@
+
 import { createContext, useEffect, useState } from "react";
 import { loggedUser, loginUser, registerUser } from "../api/authApi";
 
@@ -6,17 +7,21 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [currUser, setCurrUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token") || null);
+  const [loading, setLoading] = useState(true);
 
   const register = async (data) => {
-    const res = await registerUser(data);
-    const { token, user } = res;
+    try {
+      const res = await registerUser(data);
+      const { token, user } = res;
 
-    localStorage.setItem("token", token);
-    setCurrUser(user);
-    setToken(token);
+      localStorage.setItem("token", token);
+      setCurrUser(user);
+      setToken(token);
 
-    console.log(res);
-    console.log(token);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   };
 
   const logout = () => {
@@ -26,32 +31,49 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (data) => {
-    const res = await loginUser(data);
-    const { token, user } = res;
-    localStorage.setItem("token", token);
-    setCurrUser(user);
-    setToken(token);
+    try {
+      const res = await loginUser(data);
+      const { token, user } = res;
+      localStorage.setItem("token", token);
+      setCurrUser(user);
+      setToken(token);
 
-    console.log(res);
-    console.log(token);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   };
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await loggedUser();
-        setCurrUser(res);
-      } catch (err) {
+        if (token) {
+          const user = await loggedUser();
+          setCurrUser(user);
+        }
+      } catch {
         localStorage.removeItem("token");
         setCurrUser(null);
+        setToken(null);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchUser();
-  }, []);
+  }, [token]);
 
   return (
-    <AuthContext.Provider value={{ token, currUser, register, logout, login }}>
+    <AuthContext.Provider
+      value={{
+        token,
+        currUser,
+        loading,
+        register,
+        logout,
+        login,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

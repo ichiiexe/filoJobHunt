@@ -8,6 +8,7 @@ const jobSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Company",
     },
+    company: { type: String, required: true, trim: true },
     category: {
       type: String,
       enum: [
